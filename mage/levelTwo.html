@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mage - L2</title>
+    <link rel="stylesheet" href="stylesheet.css" />
+  </head>
+  <body>
+    <!-- display timer -->
+    <div class="container">
+      <h1>00:00</h1>
+      <p id="score">0</p>
+    </div>
+
+    <!-- Modal after time runs out -->
+    <div class="modal">
+      <div class="modal-content">
+        <h1 class="time-out">Time Out!</h1>
+        <p>Your Score is:</p>
+        <h4 class="score">0</h4>
+        <div class="buttons">
+          <button class="play-again">Play Again</button>
+          <button class="play-level">Play Another Level</button>
+        </div>
+      </div>
+    </div>
+    <script src="timer.js"></script>
+    <!------------------>
+    <div id="game-board"></div>
+    <script>
+      const score = document.querySelector('p');
+      const modal = document.querySelector('h4');
+
+      var CardsArray = [
+        { name: 'ace-clubs', img: 'assets/images/1c.png' },
+        { name: 'ace-diamond', img: 'assets/images/1d.png' },
+        { name: 'ace-heart', img: 'assets/images/1h.png' },
+        { name: 'two-clubs', img: 'assets/images/2c.png' },
+        { name: 'two-diamond', img: 'assets/images/2d.png' },
+        { name: 'two-heart', img: 'assets/images/2h.png' },
+        { name: 'three-clubs', img: 'assets/images/3c.png' },
+        { name: 'three-diamond', img: 'assets/images/3d.png' },
+        { name: 'three-heart', img: 'assets/images/3h.png' },
+      ];
+
+      //duplicating
+      var gameGrid = CardsArray.concat(CardsArray);
+
+      //randomize cards
+      gameGrid.sort(function () {
+        return 0.5 - Math.random();
+      });
+
+      var game = document.getElementById('game-board');
+      var grid = document.createElement('section');
+      grid.setAttribute('class', 'grid');
+      game.appendChild(grid);
+
+      for (i = 0; i < gameGrid.length; i++) {
+        var card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.name = gameGrid[i].name;
+
+        // Create front of card
+        var front = document.createElement('div');
+        front.classList.add('front');
+
+        // Create back of card
+        var back = document.createElement('div');
+        back.classList.add('back');
+        back.style.backgroundImage = `url(${gameGrid[i].img})`;
+
+        // Append card to grid
+        grid.appendChild(card);
+        card.appendChild(front);
+        card.appendChild(back);
+      }
+
+      var count = 0,
+        firstGuess = '',
+        secondGuess = '',
+        previousTarget = null,
+        delay = 800,
+        points = 0;
+
+      var match = function () {
+        var selected = document.querySelectorAll('.selected');
+        for (i = 0; i < selected.length; i++) {
+          selected[i].classList.add('match');
+        }
+      };
+
+      var reset = function () {
+        firstGuess = '';
+        secondGuess = '';
+        count = 0;
+        previousTarget = null;
+
+        var selected = document.querySelectorAll('.selected');
+        for (i = 0; i < selected.length; i++) {
+          selected[i].classList.remove('selected');
+        }
+      };
+
+      grid.addEventListener('click', function (event) {
+        var clicked = event.target;
+        if (
+          clicked.nodeName === 'SECTION' ||
+          clicked == previousTarget ||
+          clicked.parentNode.classList.contains('match') ||
+          clicked.parentNode.classList.contains('selected')
+        ) {
+          return;
+        }
+
+        if (count < 2) {
+          count++;
+          if (count === 1) {
+            firstGuess = clicked.parentNode.dataset.name;
+            clicked.parentNode.classList.add('selected');
+          } else {
+            secondGuess = clicked.parentNode.dataset.name;
+            clicked.parentNode.classList.add('selected');
+          }
+
+          if (firstGuess != '' && secondGuess != '') {
+            if (firstGuess == secondGuess) {
+              setTimeout(match, delay);
+              setTimeout(reset, delay);
+              points++;
+              score.innerHTML = `${points}`;
+              modal.innerHTML = `${points}`;
+            } else {
+              setTimeout(reset, delay);
+            }
+          }
+
+          previousTarget = clicked;
+        }
+      });
+    </script>
+  </body>
+</html>
